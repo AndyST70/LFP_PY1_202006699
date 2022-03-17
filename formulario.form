@@ -1,0 +1,31 @@
+formulario ~>> [
+
+    <
+        tipo: "etiqueta",
+        valor: "Nombre:"
+    >,
+
+    <
+        tipo: "texto",
+        valor: "Nombre",
+        fondo: "Ingrese nombre"
+    >,
+
+    <
+        tipo: "grupo-radio",
+        nombre: "sexo",
+        valores: ['Masculino', 'Femenino']
+    >,
+
+    <
+        tipo: "grupo-option",
+        nombre: "país",
+        valores: ['Guatemala', 'El salvador', 'Honduras']
+    >,
+
+    <
+        tipo: "boton",
+        valor: "Valor",
+        evento: <EVENTO>
+    >,
+]

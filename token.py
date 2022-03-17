@@ -1,4 +1,4 @@
-class Lexema: 
+class constructor: 
     '''Clase token'''
     def __init__(self, descripcion : str, linea, columna : int, tipo) -> None:
 
