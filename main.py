@@ -61,22 +61,28 @@ def evento_click():
 
 
 
-# def abrir():
-#     Tk ().withdraw()
-#     archivo = askopenfile(
-#         title = "ingresa tu archivo",
-#         initialdir = "./",
-#         filetypes = [
-#             ("archivo .form", "*.form"),
-#             ("todos los archivos", "*.*")
-#         ]
-#     )
-#     dato = open(archivo, "r", encoding = "utf-8")
-#     dato = ""
-#     global leer_datos
-#     leer_datos = dato.read()
-#     dato.close()
-#     return leer_datos
+def abrir():
+    Tk().withdraw()
+    archivo = filedialog.askopenfile(
+        title = "Seleccionar un archivo",
+        initialdir = "./",
+        filetypes = [
+            #Definimos los tipo de archivo
+            ("archivos .form", "*.form"),
+            ("todos los archivos",  "*.*")
+        ]
+    )
+    archivo = open(archivo, "r", encoding = "utf-8")
+    archivo = ""
+    #si no se seleccióno ningun archivo
+    if archivo is None:
+        print('No se selecciono ningun archivo\n')
+        return None
+    else:
+        #Leer el texto
+        texto = archivo.read()
+        archivo.close()
+        return texto #retorna nuestro texto
 
 def salir():
     sys.exit()
