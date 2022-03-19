@@ -1,181 +1,378 @@
 
 from error import Error
 from Token import constructor
+from prettytable import PrettyTable
 class AnalizadorLexico():
     def __init__(self):
         self.ListaTokens = []
         self.ListaErrores = [] 
         self.linea = 1
-        self.columna= 1
+        self.columna= 0
         self.lexema = ""
-        self.estado = 0
+        self.estado = 1
         self.i =0
         #tipo, lexema, linea y columna
     # while=?
-    def agregar_token(self, caracter, token, linea, columna ):
-        self.ListaTokens.append(constructor(caracter, linea, columna, token))
+    def agregar_token(self, caracter, tipo, linea, columna ):
+        self.ListaTokens.append(constructor(caracter, linea, columna, tipo))
         self.lexema = ""
-    def error_append(self, caracter, linea, columna,  token):
-        self.ListaErrores.append(Error("caracter: ", caracter, "linea: ", linea, "columna: ", columna))
-
+    def error_append(self, caracter, linea, columna,  tipo):
+        self.ListaErrores.append(Error("caracter: ", caracter, "linea: ", linea, "columna: ", columna, "tipo", tipo))
+    #!===========================================================
+    #? Entrada de excepciones, simbolos, caracteres, opciones, etc
     def Estado0(self, caracter):
-        '''Documentación analizador'''                   
+        '''Documentación q0'''                   
             # elif estado == 2: 
         if caracter.isalpha():#! is alpha se utiliza para el manejo de cadenas o bien para reconocer caracteres.
             self.lexema += caracter
             self.columna +=1
             self.estado = 1
 
-        elif caracter == "->>":
+        elif caracter.isdigit():
+            self.lexema += caracter
+            self.columna +=1
+            self.estado = 2
+
+        elif caracter ==".":
             self.lexema += caracter
             self.columna += 1
             self.estado = 2
 
-        elif caracter =="[" or caracter == "]":
-            self.lexema += caracter
-            self.columna += 1
-            self.estado = 3
 
-        elif caracter == "<" or caracter == ">":
+        elif caracter =="[":
             self.lexema += caracter
             self.columna += 1
             self.estado = 4
 
-        elif caracter =="{" or caracter == "}":
+        elif caracter == "]":
             self.lexema += caracter
             self.columna += 1
-            self.estado = 5
+            self.estado = 4
+        elif caracter == "<":
+            self.lexema += caracter
+            self.columna += 1
+            self.estado = 4
+
+        elif caracter == ">":
+            self.lexema += caracter
+            self.columna += 1
+            self.estado = 4
+        
+        elif caracter =="{":
+            self.lexema += caracter
+            self.columna += 1
+            self.estado = 4
+
+
+        elif caracter =="}":
+            self.lexema += caracter
+            self.columna += 1
+            self.estado = 4
 
         elif caracter ==",":
             self.lexema += caracter
             self.columna += 1
-            self.estado = 6
+            self.estado = 4
         
         elif caracter =="'" or caracter == '"':
             self.lexema += caracter
             self.columna +=1
-            self.estado = 7
+            self.estado = 3
         
         elif caracter ==":":
             self.lexema += caracter
             self.columna +=1
-            self.estado = 8
-
-        elif caracter.isdigit():
-            self.lexema += caracter
-            self.columna +=1
-            self.estado = 9
+            self.estado = 4
         
-        elif caracter == "&":
+        elif caracter == "#":
             self.lexema += caracter
             self.columna += 1
-            self.estado =10
+            self.estado = 4
+
+        elif  caracter == ";":
+            self.buffer += caracter
+            self.columna+=1
+            self.estado = 4
         
-        elif caracter == "\n":
-            self.linea += 1
-            self.columna = 1 
-        
-        elif caracter in ["\t", " "]:
+        elif caracter == "\t":
             self.columna +=1
-        
+
+        elif caracter == " ":
+            self.columna += 1
+
+        elif caracter == '\n':
+            self.linea += 1
+            self.columna = 1
+
         elif caracter == "$":
             pass
-
-        elif caracter == "\r":
+        
+        elif caracter == '\r':
             pass
 
         else:
             self.lexema += caracter
               #! nos dara un error
-            self.ListaErrores.append(Error("Error Caracter desconocido",
+            self.ListaErrores.append(Error(self.lexema, 
             self.linea,
-            self.columna)) 
-    def estado1(self, caracter):
-        if caracter.alpha():
+            self.columna,
+            "Error Caracter desconocido"
+            )) 
+    
+    #!===========================================================
+    #? Estados para ingreso de cadenas, indicadores y reservadas, excepciones de cadenas
+    def Estado1(self, caracter :str):
+        '''Estado q1'''
+        if caracter.isalpha():
             self.lexema += caracter
             self.columna +=1
+            self.estado = 1
+        elif caracter.isdigit():
+            self.lexema +=caracter
+            self.columna += 1    
+            self.estado = 1
+            
+        elif caracter == "_":
+            self.estado = 1
+            self.lexema +=caracter
+            self.columna += 1    
         else:
          #!===================================================
                 #? Asignamos nuestras palabras reservadas
                 #? formulario, tipo, valor, fondo, nombre
                 #? valores, evento
-
             if self.lexema == "formulario" or self.lexema == "tipo" or self.lexema == "valor" or self.lexema == "fondo" or self.lexema == "nombre" or  self.lexema == "valores" or self.lexema == "evento" :
-                self.agregar_token(self.lexema, "palabra reservada, seguida de letras minusculas", self.linea, self.columna) 
+                self.agregar_token(self.lexema, "palabra reservada seguida de letras minusculas", self.linea, self.columna)                 
+                self.estado = 0
+                self.i -= 1
+        #!======================================================
+            elif self.lexema == "etiqueta" or self.lexema == "texto" or self.lexema == "grupo-radio" or self.lexema == "grupo-option" or self.lexema == "boton" or self.lexema == "EVENTO":
+                self.agregar_token(self.lexema, "Identificador, seguida de letras minusculas /*** ", self.linea, self.columna)
+                self.estado = 0
+                self.i -= 1
+            if self.lexema == "Nombre" or self.lexema =="Ingrese Nombre" or self.lexema == "Guatemala" or self.lexema == "El salvador" or self.lexema ==" Honduras":
+                self.agregar_token(self.lexema, "Cadena, seguida de letras minusculas/numeros/espacios ", self.linea, self.columna)
+                self.estado = 0
+                self.i -= 1
+        #!======================================================
+                #?Asignamos nuestras palabras idetinficadores
+                #?etiqueta, texto, grupo-radio, grupo-option, boton, EVENTO
+            else: 
+                self.agregar_token(self.lexema, "seguida de letras/números/espacios", self.linea, self.columna)  
+                self.estado = 0
+                self.i -= 1
+    
+    #!===========================================================
+    #? Estados de digitos enteros
+    def Estado2(self, caracter :str):
+    #!===========================================================    
+        '''Estado q2'''
+    
+        if caracter.isdigit():
+            self.lexema +=caracter
+            self.columna += 1
+            self.estado = 2
+               
+        elif caracter == ".":
+            self.lexema += caracter
+            self.columna +=1
+            self.estado = 5
+        else: 
+            self.agregar_token(self.lexema, "Numero: se ingreso un número", self.linea, self.columna)
+            self.estado = 0
+            self.i -= 1
+    
+    #!===========================================================
+    #? Estado para creación de cadenas
+    def Estado3(self, caracter : str):
+        if caracter.isalpha():
+            self.lexema += caracter
+            self.columna +=1
+            self.estado = 3
+        elif caracter.isdigit():
+            self.lexema +=caracter
+            self.columna += 1    
+            self.estado = 3
+        elif caracter == "_":
+            self.estado = 1
+            self.lexema +=caracter
+            self.columna += 1   
+        else: 
+            caracter == "'" or caracter == '"'
+            self.estado = 7 
+            self.lexema +=caracter
+            self.columna += 1
+            
+   
+    def Estado7(self, caracter: str):
+        if caracter == '"':
+            self.estado = 7
+            self.lexema += caracter
+        else:         
+            self.agregar_token(self.lexema, "cadena: seguida de letras", self.linea, self.columna)
+            self.estado = 0
+            self.i -= 1
+    #!===========================================================
+    #? Estado para creación de simbolos
+    def Estado4 (self, caracter : str):
+        '''estado q4'''
+        if caracter == "[" or caracter == "]" or caracter == "<" or caracter == ">" or caracter == "{" or caracter == "}" or caracter == "," or caracter == ":" or caracter == "#" or caracter == ";": 
+            self.lexema += caracter
+            self.columna +=1
+            self.estado = 4
+        
+        else:
+            self.agregar_token(self.lexema, "Simbolo/apertura/cierre/separar textos", self.linea, self.columna)
             self.estado = 0
             self.columna += 1
             self.i -= 1
-    #!===========================================================0
-    #? Estados de simbolos
-    def estado2(self, caracter):
-        if caracter == "->>":
-            self.lexema += caracter
-            self.columna +=1
-        else:
-            self.agregar_token (self.lexema, "->> : Ingreso", self.linea, self.columna)
-            self.estado = 0
-            self.columna = 1
-            self.i -=1
-    def estado3(self, caracter):
-        if caracter == "[" or caracter == "]":
-            self.lexema += caracter
-            self.columna +=1
-     
-
-            
-
-            
-            # self.ListaTokens.append(constructor(lexema, linea, columna,"Sepadadores/ ingreso de opciones"))
-            
-            # elif caracter == ",":
-            #     self.buffer += caracter
-            #     columna += 1
-            #     self.estado = 7
-            
-            # elif caracter == "=":
-            #     self.buffer += caracter
-            #     columna += 1
-            #     self.estado = 8
-            
-            # #! espacios no reconocidos
-            # elif caracter == "[ \t]":
-            #     self.buffer += caracter
-            #     columna += 1
-            #     self.estado = 13
-
-            # elif caracter == "[ \n]":
-            #     self.buffer += caracter
-            #     columna += 1
-            #     self.estado = 14
-
-            # elif caracter == "[ \r]":
-            #     self.buffer += caracter
-            #     columna += 1
-            #     self.estado = 15
-            # #reconoce espacios, ¿funciona? lo averiguaremos
-            # elif caracter == " ":
-            #     self.buffer += caracter
-            #     columna += 1
-            #     self.estado = 16
-            # elif caracter == ":":
-            #     self.buffer += caracter
-            #     columna += 1
-            #     self.estado = 17
-            
-            # # elif caracter == ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-            # elif caracter.isdigit(): #! funciona para saber si es numerico
-            #     self.buffer += caracter
-            #     columna +=1
-            #     self.estado = 18
-
-            # else: 
-            #     #! nos dara un error
-            #     self.ListaErrores.append(Error("Error Caracter desconocido",
-            #     linea,
-            #     columna))
-
-    def Imprimir_Tokens(self):
-        print("Lista tokens")
-        for a in self.ListaTokens:
-            a.Imprimir_Tokens()
+        
     
+    #!===========================================================
+    #? Estado para creación de decimales
+    def Estado5(self, caracter : str):
+
+        '''Estado q5'''    
+        if caracter.isdigit():
+            self.lexema +=caracter
+            self.columna += 1
+            self.estado = 6
+        else: 
+            pass
+    
+    #!===========================================================
+    #? Estados para creación de decimales
+    def Estado6(self, caracter: str):
+        '''estado q6'''
+        if  caracter.isdigit():
+            self.lexema +=caracter
+            self.columna += 1
+            self.estado = 6            
+        else:
+            self.agregar_token(self.lexema, "Numero: se ingreso seguido de un decimal", self.linea, self.columna)
+            self.estado = 0
+            self.i -= 1
+    #!===========================================================
+    #? Estados para creación de decimales
+    
+    
+    
+    def nofunciona(self):
+         
+        # def estado6(self, caracter):
+        #     '''estado q6'''
+        #     if caracter == ",":
+        #         self.lexema += caracter
+        #         self.columna +=1
+        
+        #     else: 
+        #         self.agregar_token(self.lexema, "coma : coma /concatenar/nuevo dato", self.linea, self.columna)
+        #         self.estado = 0
+        #         self.columna = 1
+        #         self.i -=1
+        # def estado7(self, caracter):
+        #     '''estados q7'''
+        #     self.agregar_token(self.lexema, "comillas, simples/dobles", self.linea, self.columna)
+        #     self.estado = 0
+        #     self.i -=1
+        # def estado8(self, caracter):
+        #     '''estado q8'''
+        #     self.agregar_token(self.lexema, "")
+        # def estado9 (self, caracter):
+        #     '''estado q9'''
+        #     self.agregar_token(self.lexema, "")
+        # def estado10(self, caracter):
+        #     '''estado q9'''
+        #     self.agregar_token(self.lexema, "")
+        # def estado11 (self, caracter):
+        #     '''estado q9'''
+        #     self.agregar_token(self.lexema, "")
+                
+        #         # self.ListaTokens.append(constructor(lexema, linea, columna,"Sepadadores/ ingreso de opciones"))
+                
+        #         # elif caracter == ",":
+        #         #     self.buffer += caracter
+        #         #     columna += 1
+        #         #     self.estado = 7
+                
+        #         # elif caracter == "=":
+        #         #     self.buffer += caracter
+        #         #     columna += 1
+        #         #     self.estado = 8
+                
+        #         # #! espacios no reconocidos
+        #         # elif caracter == "[ \t]":
+        #         #     self.buffer += caracter
+        #         #     columna += 1
+        #         #     self.estado = 13
+
+        #         # elif caracter == "[ \n]":
+        #         #     self.buffer += caracter
+        #         #     columna += 1
+        #         #     self.estado = 14
+
+        #         # elif caracter == "[ \r]":
+        #         #     self.buffer += caracter
+        #         #     columna += 1
+        #         #     self.estado = 15
+        #         # #reconoce espacios, ¿funciona? lo averiguaremos
+        #         # elif caracter == " ":
+        #         #     self.buffer += caracter
+        #         #     columna += 1
+        #         #     self.estado = 16
+        #         # elif caracter == ":":
+        #         #     self.buffer += caracter
+        #         #     columna += 1
+        #         #     self.estado = 17
+                
+        #         # # elif caracter == ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        #         # elif caracter.isdigit(): #! funciona para saber si es numerico
+        #         #     self.buffer += caracter
+        #         #     columna +=1
+        #         #     self.estado = 18
+
+        #         # else: 
+        #         #     #! nos dara un error
+        #         #     self.ListaErrores.append(Error("Error Caracter desconocido",
+        #         #     linea,
+                #     columna))
+                print("nel")
+
+    def Analizar(self, caracter):
+        self.ListaErrores = []
+        self.ListaTokens = []
+        self.i= 0
+        while self.i < len(caracter):
+            if self.estado == 0:
+                self.Estado0(caracter[self.i])
+            elif self.estado == 1:
+                self.Estado1(caracter[self.i])
+            elif self.estado == 2:
+                self.Estado2(caracter[self.i])
+            elif self.estado == 3:
+                self.Estado3(caracter[self.i])
+            elif self.estado == 4:
+                self.Estado4(caracter[self.i])
+            elif self.estado == 5:
+                self.Estado5(caracter[self.i])
+            elif self.estado == 6:
+                self.Estado6(caracter[self.i])
+            elif self.estado == 7:
+                self.Estado7(caracter[self.i])
+            self.i += 1
+
+    def imprimirTokens(self):
+        '''Imprime una tabla con los tokens'''
+        x = PrettyTable()
+        x.field_names = ["Lexema","linea","columna","tipo"]
+        for token in self.ListaTokens:
+            x.add_row([token.lexema, token.linea, token.columna,token.tipo])
+        print(x)
+
+    def imprimirErrores(self):
+        '''Imprime una tabla con los errores'''
+        x = PrettyTable()
+        x.field_names = ["Lexema","linea","columna", "tipo"]
+        for error_ in self.listaErrores:
+            x.add_row([error_.descripcion, error_.linea, error_.columna, error_.tipo])
+        print(x)  

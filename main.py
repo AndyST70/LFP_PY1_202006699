@@ -5,7 +5,7 @@ from tkinter.filedialog import askopenfile
 from tkinter import filedialog, Tk
 import sys
 from analizador import AnalizadorLexico
-ret = AnalizadorLexico ()
+lexico = AnalizadorLexico ()
 def ventana_creacion():
     #!ttk son los componentes
     #? creamo nuestro objeto 
@@ -117,8 +117,15 @@ if __name__ == '__main__':
         tipo: "boton",
         valor: "Valor",
         evento: <EVENTO>
-    >,
+    >
 ]'''
     ventana_creacion()
-    ret.analizador(txt)
-  
+    lexico.Analizar(txt)
+    # for token in lexico.ListaTokens:
+    #     print(len(token.))
+    # for token in lexico.ListaErrores:
+    #     print(len(lexico.error_append()))
+    lexico.imprimirTokens()
+
+    print(len(lexico.ListaTokens))
+    print(len(lexico.ListaErrores))

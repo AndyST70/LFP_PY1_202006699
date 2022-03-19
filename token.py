@@ -2,7 +2,7 @@ class constructor:
     '''Clase token'''
     def __init__(self, descripcion : str, linea, columna : int, tipo) -> None:
 
-        self.descripcion = descripcion
+        self.descripcion = descripcion #?lexema
         self.linea = linea
         self.columna = columna
         self.tipo = tipo
