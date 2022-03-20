@@ -1,11 +1,15 @@
+from cgitb import text
+from pickle import GLOBAL
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
 from tkinter import filedialog, Tk
 import sys
+from tkinter.scrolledtext import ScrolledText
 from analizador import AnalizadorLexico
 lexico = AnalizadorLexico ()
+
 def ventana_creacion():
     #!ttk son los componentes
     #? creamo nuestro objeto 
@@ -33,11 +37,21 @@ def ventana_creacion():
     #? creación de nuestra ventana
 
 
-    boton = Button(ventana, text  = "Analizar", command = evento_click, width="30", height="2", bg = "#00FF58" )
-    boton.place(x=22, y =450)
+    boton_analizar = Button(ventana, text  = "Analizar", command = analizar, width="30", height="2", bg = "#00FF58" )
+    boton_analizar.place(x=22, y =450)
+    
+    boton_cargar = Button(ventana, text = "Cargar", command= abrir, width= "30", height= "2", bg = "#00FF58" )
+    boton_cargar.place(x= 350, y = 450)
 
     lista_ = combo = ttk.Combobox()
+    lista_.place(x= 100, y = 50)
     combo.place(x=500, y=75)
+
+    global caja_texto
+
+    caja_texto = ScrolledText(ventana, width = "50", height= "20")
+    caja_texto.place(x=40, y = 60)
+    
 
 
     #? utilizamos nuestro pack layout manager
@@ -51,8 +65,15 @@ def ventana_creacion():
 
 
 
-def evento_click():
-   print(" Prueba de ejecución")
+def analizar():
+   #!traemos nuestros datos para manipulación y realización de tablas 
+   a = caja_texto.get("1.0", tk.END)
+   lexico.iniciar()
+   lexico.Analizar(a)
+   lexico.imprimirTokens()
+   lexico.imprimirErrores()
+   
+
     # modificamos el boton al tocarlo
    #boton_1.config(text = "Ingresando") 
     #!creación de botones 
@@ -72,24 +93,25 @@ def abrir():
             ("todos los archivos",  "*.*")
         ]
     )
-    archivo = open(archivo, "r", encoding = "utf-8")
-    archivo = ""
     #si no se seleccióno ningun archivo
     if archivo is None:
         print('No se selecciono ningun archivo\n')
         return None
     else:
+        archivo_2 = open(archivo.name, "r", encoding = "utf-8")
         #Leer el texto
-        texto = archivo.read()
-        archivo.close()
+        texto = archivo_2.read()
+        archivo_2.close()
+        caja_texto.delete("1.0", "end")
+        caja_texto.insert(INSERT, texto)
         return texto #retorna nuestro texto
 
 def salir():
     sys.exit()
     
 if __name__ == '__main__':
-    
-    txt = '''formulario ~>> [
+   
+    archivo_prueba = '''Hola mundo ~>> [
     <
         tipo: "etiqueta",
         valor: "Nombre:"
@@ -120,12 +142,12 @@ if __name__ == '__main__':
     >
 ]'''
     ventana_creacion()
-    lexico.Analizar(txt)
+    # lexico.Analizar(txt)
     # for token in lexico.ListaTokens:
     #     print(len(token.))
     # for token in lexico.ListaErrores:
     #     print(len(lexico.error_append()))
-    lexico.imprimirTokens()
+    
 
     print(len(lexico.ListaTokens))
     print(len(lexico.ListaErrores))

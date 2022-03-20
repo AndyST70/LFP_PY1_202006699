@@ -8,9 +8,9 @@ class AnalizadorLexico():
         self.ListaErrores = [] 
         self.linea = 1
         self.columna= 0
-        self.lexema = ""
-        self.estado = 1
-        self.i =0
+        self.lexema = "" # strings
+        self.estado = 1  #
+        self.i = 0
         #tipo, lexema, linea y columna
     # while=?
     def agregar_token(self, caracter, tipo, linea, columna ):
@@ -26,7 +26,7 @@ class AnalizadorLexico():
         if caracter.isalpha():#! is alpha se utiliza para el manejo de cadenas o bien para reconocer caracteres.
             self.lexema += caracter
             self.columna +=1
-            self.estado = 1
+            self.estado = 1  # l, s, a, d
 
         elif caracter.isdigit():
             self.lexema += caracter
@@ -90,7 +90,7 @@ class AnalizadorLexico():
             self.estado = 4
 
         elif  caracter == ";":
-            self.buffer += caracter
+            self.lexema += caracter
             self.columna+=1
             self.estado = 4
         
@@ -123,42 +123,47 @@ class AnalizadorLexico():
     #? Estados para ingreso de cadenas, indicadores y reservadas, excepciones de cadenas
     def Estado1(self, caracter :str):
         '''Estado q1'''
-        if caracter.isalpha():
-            self.lexema += caracter
+
+        if caracter.isalpha(): # tipo
+            self.lexema += caracter 
             self.columna +=1
             self.estado = 1
-        elif caracter.isdigit():
+
+        elif caracter.isdigit(): #tipo2
             self.lexema +=caracter
             self.columna += 1    
             self.estado = 1
             
-        elif caracter == "_":
+        elif caracter == "_": #tipo_2a
             self.estado = 1
             self.lexema +=caracter
             self.columna += 1    
+        
         else:
          #!===================================================
                 #? Asignamos nuestras palabras reservadas
                 #? formulario, tipo, valor, fondo, nombre
                 #? valores, evento
-            if self.lexema == "formulario" or self.lexema == "tipo" or self.lexema == "valor" or self.lexema == "fondo" or self.lexema == "nombre" or  self.lexema == "valores" or self.lexema == "evento" :
-                self.agregar_token(self.lexema, "palabra reservada seguida de letras minusculas", self.linea, self.columna)                 
+            if self.lexema == "formulario" :
+                self.agregar_token(self.lexema, "palabra reservada", self.linea, self.columna)                 
                 self.estado = 0
                 self.i -= 1
         #!======================================================
-            elif self.lexema == "etiqueta" or self.lexema == "texto" or self.lexema == "grupo-radio" or self.lexema == "grupo-option" or self.lexema == "boton" or self.lexema == "EVENTO":
-                self.agregar_token(self.lexema, "Identificador, seguida de letras minusculas /*** ", self.linea, self.columna)
+            # elif self.lexema == "Nombre" or self.lexema =="Ingrese Nombre" or self.lexema == "Guatemala" or self.lexema == "El salvador" or self.lexema ==" Honduras":
+            #     self.agregar_token(self.lexema, "Cadena, seguida de letras minusculas/numeros/espacios ", self.linea, self.columna)
+            #     self.estado = 0
+            #     self.i -= 1
+            
+            elif self.lexema == "tipo" or self.lexema == "valor" or self.lexema == "fondo" or self.lexema == "nombre" or self.lexema == "valores" or self.lexema == "evento":
+                self.agregar_token(self.lexema, "Identificador", self.linea, self.columna)
                 self.estado = 0
                 self.i -= 1
-            if self.lexema == "Nombre" or self.lexema =="Ingrese Nombre" or self.lexema == "Guatemala" or self.lexema == "El salvador" or self.lexema ==" Honduras":
-                self.agregar_token(self.lexema, "Cadena, seguida de letras minusculas/numeros/espacios ", self.linea, self.columna)
-                self.estado = 0
-                self.i -= 1
+            
         #!======================================================
                 #?Asignamos nuestras palabras idetinficadores
                 #?etiqueta, texto, grupo-radio, grupo-option, boton, EVENTO
             else: 
-                self.agregar_token(self.lexema, "seguida de letras/números/espacios", self.linea, self.columna)  
+                self.agregar_token(self.lexema, "Identificador", self.linea, self.columna)  
                 self.estado = 0
                 self.i -= 1
     
@@ -185,7 +190,7 @@ class AnalizadorLexico():
     #!===========================================================
     #? Estado para creación de cadenas
     def Estado3(self, caracter : str):
-        if caracter.isalpha():
+        if caracter.isalpha() or caracter == "-" or caracter == " ":
             self.lexema += caracter
             self.columna +=1
             self.estado = 3
@@ -193,10 +198,10 @@ class AnalizadorLexico():
             self.lexema +=caracter
             self.columna += 1    
             self.estado = 3
-        elif caracter == "_":
-            self.estado = 1
-            self.lexema +=caracter
-            self.columna += 1   
+        #elif caracter == "_" or caracter == " ":
+        #    self.estado = 1
+        #     self.lexema +=caracter
+        #     self.columna += 1   
         else: 
             caracter == "'" or caracter == '"'
             self.estado = 7 
@@ -205,11 +210,11 @@ class AnalizadorLexico():
             
    
     def Estado7(self, caracter: str):
-        if caracter == '"':
+        if caracter == '"' or caracter == "'":
             self.estado = 7
             self.lexema += caracter
         else:         
-            self.agregar_token(self.lexema, "cadena: seguida de letras", self.linea, self.columna)
+            self.agregar_token(self.lexema, "Cadena", self.linea, self.columna)
             self.estado = 0
             self.i -= 1
     #!===========================================================
@@ -222,7 +227,7 @@ class AnalizadorLexico():
             self.estado = 4
         
         else:
-            self.agregar_token(self.lexema, "Simbolo/apertura/cierre/separar textos", self.linea, self.columna)
+            self.agregar_token(self.lexema, "Simbolo", self.linea, self.columna)
             self.estado = 0
             self.columna += 1
             self.i -= 1
@@ -366,13 +371,26 @@ class AnalizadorLexico():
         x = PrettyTable()
         x.field_names = ["Lexema","linea","columna","tipo"]
         for token in self.ListaTokens:
-            x.add_row([token.lexema, token.linea, token.columna,token.tipo])
+            x.add_row([token.descripcion, token.linea, token.columna,token.tipo])
         print(x)
+        return x.get_html_string()
 
     def imprimirErrores(self):
         '''Imprime una tabla con los errores'''
         x = PrettyTable()
         x.field_names = ["Lexema","linea","columna", "tipo"]
-        for error_ in self.listaErrores:
-            x.add_row([error_.descripcion, error_.linea, error_.columna, error_.tipo])
-        print(x)  
+        if len(self.ListaErrores) != None:
+            for error_ in self.ListaErrores:
+                x.add_row([error_.descripcion, error_.linea, error_.columna, error_.tipo])     
+            print(x)
+        return x.get_csv_string()
+
+
+    def iniciar(self):
+        self.ListaTokens = []
+        self.ListaErrores = [] 
+        self.linea = 1
+        self.columna= 0
+        self.lexema = "" # strings
+        self.estado = 1  #
+        self.i = 0
