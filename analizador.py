@@ -2,6 +2,8 @@
 from error import Error
 from Token import constructor
 from prettytable import PrettyTable
+import os
+from tkinter import messagebox
 class AnalizadorLexico():
     def __init__(self):
         self.ListaTokens = []
@@ -10,7 +12,7 @@ class AnalizadorLexico():
         self.columna= 0
         self.lexema = "" # strings
         self.estado = 1  #
-        self.i = 0
+        self.i = 0 #? con este vamos recorriendo nuestras listas y guardando
         #tipo, lexema, linea y columna
     # while=?
     def agregar_token(self, caracter, tipo, linea, columna ):
@@ -370,20 +372,30 @@ class AnalizadorLexico():
         '''Imprime una tabla con los tokens'''
         x = PrettyTable()
         x.field_names = ["Lexema","linea","columna","tipo"]
-        for token in self.ListaTokens:
-            x.add_row([token.descripcion, token.linea, token.columna,token.tipo])
-        print(x)
+        if len(self.ListaTokens) >0:
+            for token in self.ListaTokens:
+                x.add_row([token.descripcion, token.linea, token.columna,token.tipo])
+            print(x)
+        else: 
+            messagebox.showinfo("Advertencia", "Te falta la información")
+        
+        self.Tabla_tokens(x.get_html_string(),"tokens")
         return x.get_html_string()
 
     def imprimirErrores(self):
         '''Imprime una tabla con los errores'''
         x = PrettyTable()
         x.field_names = ["Lexema","linea","columna", "tipo"]
-        if len(self.ListaErrores) != None:
+        if len(self.ListaErrores) > 0:
             for error_ in self.ListaErrores:
                 x.add_row([error_.descripcion, error_.linea, error_.columna, error_.tipo])     
             print(x)
-        return x.get_csv_string()
+        else: 
+            messagebox.showinfo("Advertencia", "Te falta la información")
+        
+        self.Tabla_tokens(x.get_html_string(),"errores")
+        
+        return x.get_html_string()
 
 
     def iniciar(self):
@@ -394,3 +406,41 @@ class AnalizadorLexico():
         self.lexema = "" # strings
         self.estado = 1  #
         self.i = 0
+    def guardar(self, name: str, cadena: str, abrir: bool = True ):  #? es una libreria por defecto, sirve para manejo de rutas
+        ruta = os.path.dirname(os.path.abspath(__file__))+"\\archivos"
+        apertura= open("{}\\{}".format(ruta, name), encoding = "utf-8", mode = "w" )
+        apertura.write(cadena)
+        apertura.close()
+        if abrir:
+            os.system('start {}\\"{}"'.format(ruta, name))#? format = es para incrustar valores desde codigo a cadena
+    def busqueda(self, codigo ):
+        self.Analizar(codigo)
+        self.Tabla_tokens(codigo)
+
+    def Tabla_tokens(self, cadena, nombre_tab):
+        print("su reporte se esta cargando")
+        print(" cargando.....")
+        print(" cargando ......")
+        print("gracias por preferirnos")
+        # repo = open("Tabla.html", "w")
+        estilo = '''<!DOCTYPE html>
+        <html lang="en">
+            <head>
+                <title>Tabla {1}</title>
+                <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+            </head>
+        <body>
+        <div class="container">
+        <h2>Tabla {1}</h2>  
+         <table class="table">
+            <thead class="thead-dark">
+             {0}
+        </table>'''.format(cadena, nombre_tab)  #? 1: nombre_tab, 0: cadena
+        self.guardar("{0}.html".format(nombre_tab), estilo, True)#? colocamos falso para abrir después
+    
+
